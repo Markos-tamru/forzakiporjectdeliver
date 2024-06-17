@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="43fdbf15-9ac0-4630-87d8-3f13c08b5326" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="51f3676d-c710-4456-900a-c02968e13f6a" >
+		<file:connection workingDir="${app.home}" />
+	</file:config>
+	<flow name="zaki-projectFlow" doc:id="d300fd5e-1e99-47f0-8392-340bcb99233b" >
+		<http:listener doc:name="Listener" doc:id="aefb6b2a-3207-4d02-a36d-75528ec5316b" config-ref="HTTP_Listener_config" path="/home"/>
+		<choice doc:name="Choice" doc:id="05bbf1e0-08ed-4e9d-86f0-dece7ffd6bc4" >
+			<when expression='#[attributes.queryParams.name == "zaki"]'>
+				<file:read doc:name="Read" doc:id="4409a9fb-114e-4433-8156-e8430df28d43" path='#["zaki.jpg"]' config-ref="File_Config"/>
+			</when>
+			<when expression='#[attributes.queryParams.name == "mark"]'>
+				<file:read doc:name="Read" doc:id="eda0d5b5-8ecc-4160-929d-729ba333ee88" path='#["mark.jpg"]' config-ref="File_Config"/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="891a1e8c-7ec9-4e5f-a2f9-786ede773888" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+"sorry we dont have this name logistician information..."]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="4e6b86b2-1f64-4377-a607-dc1c284fecd0" message="#[payload]"/>
+	</flow>
+	<flow name="zaki-projectFlow1" doc:id="80cd1c3d-2c7e-4258-8462-f0e40026ecb2" >
+		<http:listener doc:name="Listener" doc:id="96022e0e-4d3d-4561-8494-699c23d5769e" config-ref="HTTP_Listener_config" path="/home/{name}"/>
+		<set-payload value='#[attributes.uriParams.name  == "This is the payload from equal sign "]' doc:name="Set Payload" doc:id="c007008b-1bcd-4c0a-b53c-9339aaf312cc" />
+		<ee:transform doc:name="Transform Message" doc:id="8883a496-ae22-4712-87ba-f6b774fcfa71" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
